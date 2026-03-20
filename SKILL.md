@@ -1,6 +1,6 @@
 ---
-name: openui
-description: This skill describes a schema language that can be used to model UIs and user processes across them, much as DBML sits in relation to SQL or OpenAPI sits in relation to a generated API client or backend.
+name: tacky
+description: Tacky is a YAML schema language for specifying UIs and the paths users take through them, much as DBML sits in relation to SQL or OpenAPI sits in relation to a generated API client or backend.
 version: 0.0.1
 ---
 

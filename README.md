@@ -1,8 +1,8 @@
-# UI Markup Skill
+# Tacky
 
 A YAML schema language for describing user interfaces and the paths users take through them — compiled to working prototypes and diagrams.
 
-It occupies the same space relative to a UI as DBML does to a database schema, or OpenAPI does to a REST API: a concise, human-readable spec that can be handed to a compiler or a model to generate real output.
+It occupies the same space relative to a UI as DBML does to a database schema, or OpenAPI does to a REST API: a concise, human-readable spec that can be handed to a compiler or a model to generate real output. The name reflects its purpose: a lo-fi scaffold that sticks a spec to generated output.
 
 ## What it does
 
