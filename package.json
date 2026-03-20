@@ -1,5 +1,5 @@
 {
-  "name": "ui-dsl-compiler",
+  "name": "tacky",
   "version": "0.1.0",
   "scripts": {
     "test": "bun test",

@@ -1,4 +1,4 @@
-# UI Markup Skill — Specification
+# Tacky — Specification
 
 This document defines the schema language, the rules governing how schema elements relate to each other, and the rules each compiler target must follow. It is the authoritative reference for recreating or extending this codebase.
 
@@ -6,7 +6,7 @@ This document defines the schema language, the rules governing how schema elemen
 
 ## Purpose
 
-UI Markup is a YAML DSL for modelling user interfaces and the paths users take through them — analogous to how DBML relates to SQL, or OpenAPI relates to a REST API. A UI spec is target-agnostic: the same YAML file can be compiled to a Mermaid diagram, a React scaffold, or any future target.
+Tacky is a YAML DSL for modelling user interfaces and the paths users take through them — analogous to how DBML relates to SQL, or OpenAPI relates to a REST API. A UI spec is target-agnostic: the same YAML file can be compiled to a Mermaid diagram, a React scaffold, or any future target.
 
 ---
 
@@ -148,6 +148,38 @@ A value carried from the source view to the destination view as a URL query para
 
 ---
 
+### `Fixture`
+
+A named dataset defined at the top level of a UI document. Fixtures are referenced by components to display conditional dummy data in prototype targets.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | yes | Unique identifier, referenced by `ComponentFixtureRef.ref` |
+| `data` | FixtureItem[] | yes | Array of data records |
+
+A `FixtureItem` is an object whose keys and values are both strings (e.g. `title`, `url`, `snippet`).
+
+---
+
+### `ComponentFixtureRef`
+
+Attaches a fixture dataset to a component, conditionally selected by a URL query param value.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `ref` | string | yes | Name of the fixture to use (must match a top-level `Fixture.name`) |
+| `when.param` | string | yes | The URL query param name to inspect |
+| `when.equals` | string | yes | The value the param must equal for this fixture to be active |
+
+A component may have multiple fixture refs. They are evaluated in order; the first matching `when` condition wins.
+
+**Rules:**
+- `ref` must match a fixture defined in the top-level `fixtures` array.
+- If no `when` condition matches, the component falls back to its default placeholder rendering.
+- Fixture logic is intentionally limited to simple equality checks (`param == value`). More complex conditions are a signal to move logic into the application layer.
+
+---
+
 ### `Annotation`
 
 A human-readable note attached to any schema element. Annotations are never semantic — they do not affect compilation logic — but they are always surfaced in compiler output as code comments.
@@ -191,6 +223,9 @@ Access control metadata. In the React target, ACL is rendered as a JSX comment. 
 7. Navigation to a destination appends params as a URL query string, values URL-encoded.
 8. The full project scaffold is generated alongside view files: `package.json`, `index.html`, `vite.config.ts`, `tsconfig.json`, `src/main.tsx`.
 9. The generated project uses pnpm. After generation, run `pnpm install && pnpm dev` to start.
+10. When a view contains components with fixture refs, `useSearchParams` is imported and a module-level `_fixtures` constant is generated containing only the datasets referenced by that view.
+11. For each component with fixture refs, a `<componentName>_data` variable is generated using an IIFE that evaluates `when` conditions in order and returns the matching fixture array, or `[]` if none match.
+12. `useNavigate` and `useSearchParams` are merged into a single `import { ... } from 'react-router-dom'` statement.
 
 ---
 
