@@ -1,0 +1,175 @@
+$schema: 'https://json-schema.org/draft/2020-12/schema'
+
+description: The schema for a UI DSL that can compile to different targets such as a Mermaid diagram, a React or Angular scaffold, etc.
+
+type: object
+properties:
+  name:
+    type: string
+  resources:
+    $ref: '#/$defs/resources'
+  actors:
+    $ref: '#/$defs/actors'
+  views:
+    type: array
+    items:
+      $ref: '#/$defs/view'
+  paths:
+    type: array
+    items:
+      $ref: '#/$defs/path'
+  acl:
+    $ref: '#/$defs/acl'
+required:
+  - name
+
+$defs:
+
+  annotation:
+    type: object
+    properties:
+      note:
+        type: string
+    required:
+      - note
+
+  resource:
+    type: object
+    properties:
+      name:
+        type: string
+      purpose:
+        type: string
+      annotation:
+        $ref: '#/$defs/annotation'
+    required:
+      - name
+
+  resources:
+    oneOf:
+      - type: array
+        items:
+          $ref: '#/$defs/resource'
+      - type: object
+        additionalProperties:
+          $ref: '#/$defs/resource'
+
+  actor:
+    type: object
+    properties:
+      name:
+        type: string
+      annotation:
+        $ref: '#/$defs/annotation'
+    required:
+      - name
+
+  actors:
+    oneOf:
+      - type: array
+        items:
+          $ref: '#/$defs/actor'
+      - type: object
+        additionalProperties:
+          $ref: '#/$defs/actor'
+
+  component:
+    type: object
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+      annotation:
+        $ref: '#/$defs/annotation'
+      acl:
+        $ref: '#/$defs/acl'
+    required:
+      - name
+      - type
+
+  view:
+    type: object
+    properties:
+      name:
+        type: string
+      components:
+        type: array
+        items:
+          $ref: '#/$defs/component'
+      annotation:
+        $ref: '#/$defs/annotation'
+      acl:
+        $ref: '#/$defs/acl'
+    required:
+      - name
+
+  trigger:
+    type: object
+    properties:
+      component:
+        type: string
+        description: name of the Component whose interaction fires this path
+      on:
+        type: string
+        enum: [submit, click, change]
+        description: the interaction event that fires this path
+    required:
+      - component
+      - on
+
+  param:
+    type: object
+    properties:
+      name:
+        type: string
+        description: the query param key carried to the destination view
+      from:
+        type: string
+        description: name of the Component whose value is used
+    required:
+      - name
+      - from
+
+  path:
+    type: object
+    properties:
+      from:
+        type: string
+        description: name of the source View
+      to:
+        type: string
+        description: name of the destination View
+      actors:
+        type: array
+        items:
+          type: string
+        description: names of Actors who can follow this path
+      trigger:
+        $ref: '#/$defs/trigger'
+      params:
+        type: array
+        items:
+          $ref: '#/$defs/param'
+        description: component values to carry as query params to the destination view
+      annotation:
+        $ref: '#/$defs/annotation'
+      acl:
+        $ref: '#/$defs/acl'
+    required:
+      - from
+      - to
+
+  acl:
+    type: object
+    properties:
+      roles:
+        type: array
+        items:
+          type: string
+      conditions:
+        type: array
+        items:
+          type: string
+      annotation:
+        $ref: '#/$defs/annotation'

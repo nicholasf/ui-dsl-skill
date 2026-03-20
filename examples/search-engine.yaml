@@ -1,0 +1,85 @@
+name: Search Engine
+
+actors:
+  - name: user
+    annotation:
+      note: An anonymous user visiting the search engine
+
+resources:
+  - name: search_index
+    purpose: The indexed corpus of web pages that can be queried
+  - name: search_results
+    purpose: The ranked list of results returned for a query
+  - name: web_page
+    purpose: An external page that a result link points to
+
+views:
+  - name: home
+    annotation:
+      note: The landing page with a search input
+    components:
+      - name: search_bar
+        type: input
+        annotation:
+          note: Text input where the user enters their search query
+      - name: search_button
+        type: button
+
+  - name: results
+    annotation:
+      note: Displays ranked search results for the submitted query
+    components:
+      - name: results_list
+        type: list
+        annotation:
+          note: Each item shows a title, URL, and snippet. The first result should be visually prominent.
+      - name: search_bar
+        type: input
+        annotation:
+          note: Pre-populated with the current query, allowing refinement
+
+  - name: result_page
+    annotation:
+      note: The external web page reached by following a result link
+    components:
+      - name: page_content
+        type: embed
+        annotation:
+          note: Renders the destination page content
+
+paths:
+  - from: home
+    to: results
+    actors:
+      - user
+    trigger:
+      component: search_bar
+      on: submit
+    params:
+      - name: query
+        from: search_bar
+    annotation:
+      note: User submits a search query by pressing Enter in the search bar
+
+  - from: home
+    to: results
+    actors:
+      - user
+    trigger:
+      component: search_button
+      on: click
+    params:
+      - name: query
+        from: search_bar
+    annotation:
+      note: User submits a search query by clicking the search button
+
+  - from: results
+    to: result_page
+    actors:
+      - user
+    trigger:
+      component: results_list
+      on: click
+    annotation:
+      note: User follows the first result link from the results page

@@ -1,0 +1,74 @@
+name: Wiki
+
+actors:
+  - name: admin
+    annotation:
+      note: An authenticated administrator who can view and edit wiki pages
+  - name: reader
+    annotation:
+      note: An anonymous or authenticated user who can only view wiki pages
+
+resources:
+  - name: wiki_page
+    purpose: A wiki page containing structured content authored by admins
+
+views:
+  - name: wiki_page_view
+    annotation:
+      note: Displays the content of a wiki page
+    components:
+      - name: page_content
+        type: richtext
+        annotation:
+          note: Renders the wiki page content as formatted text
+      - name: edit_menu
+        type: menu
+        annotation:
+          note: Menu offering an edit action. Only visible to admins.
+        acl:
+          roles:
+            - admin
+
+  - name: wiki_page_edit
+    annotation:
+      note: Allows an admin to edit the content of a wiki page
+    acl:
+      roles:
+        - admin
+    components:
+      - name: content_form
+        type: form
+        annotation:
+          note: A rich text editor pre-populated with the current page content. The admin adds or modifies content here before saving.
+      - name: save_button
+        type: button
+
+  - name: wiki_page_updated
+    annotation:
+      note: Displays the wiki page with the newly saved content
+    components:
+      - name: page_content
+        type: richtext
+        annotation:
+          note: Renders the updated wiki page content
+
+paths:
+  - from: wiki_page_view
+    to: wiki_page_edit
+    actors:
+      - admin
+    annotation:
+      note: Admin follows the edit path via the edit menu component
+    acl:
+      roles:
+        - admin
+
+  - from: wiki_page_edit
+    to: wiki_page_updated
+    actors:
+      - admin
+    annotation:
+      note: Admin submits the content form, saving the changes
+    acl:
+      roles:
+        - admin
