@@ -14,7 +14,6 @@ function edgeLabel(path: Path): string {
 export function compile(ui: UI): string {
   const lines: string[] = ['flowchart LR'];
 
-  // Nodes from views
   if (ui.views) {
     for (const view of ui.views) {
       const id = sanitize(view.name);
@@ -25,7 +24,6 @@ export function compile(ui: UI): string {
 
   lines.push('');
 
-  // Edges from paths
   if (ui.paths) {
     for (const path of ui.paths) {
       const from = sanitize(path.from);

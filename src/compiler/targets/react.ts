@@ -73,7 +73,6 @@ function compileView(view: View, outgoing: Path[]): string {
   const routerImport = needsRouter ? `import { useNavigate } from 'react-router-dom';\n` : '';
   const navigateHook = needsRouter ? `\n  const navigate = useNavigate();` : '';
 
-  // Only track state for inputs referenced in outgoing params
   const paramSources = new Set(outgoing.flatMap(p => p.params?.map(param => param.from) ?? []));
   const needsState = (view.components ?? []).some(c => c.type === 'input' && paramSources.has(c.name));
   const stateImport = needsState ? `import { useState } from 'react';\n` : '';
