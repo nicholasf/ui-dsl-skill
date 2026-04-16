@@ -1,10 +1,23 @@
 {
   "name": "tacky",
   "version": "0.1.0",
+  "description": "YAML schema language for UI specs, compiled to prototypes and diagrams",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "bin": {
+    "tacky": "./bin/tacky"
+  },
+  "files": [
+    "bin",
+    "src"
+  ],
   "scripts": {
     "test": "bun test",
     "compile:mermaid": "bun run src/compiler/index.ts examples/wiki.yaml mermaid",
-    "compile:react": "bun run src/compiler/index.ts examples/wiki.yaml react output/"
+    "compile:react": "bun run src/compiler/index.ts examples/wiki.yaml react build/",
+    "compile:expo": "bun run src/compiler/index.ts examples/wiki.yaml expo build/"
   },
   "dependencies": {
     "yaml": "^2.4.5"

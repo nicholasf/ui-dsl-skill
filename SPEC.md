@@ -148,38 +148,6 @@ A value carried from the source view to the destination view as a URL query para
 
 ---
 
-### `Fixture`
-
-A named dataset defined at the top level of a UI document. Fixtures are referenced by components to display conditional dummy data in prototype targets.
-
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `name` | string | yes | Unique identifier, referenced by `ComponentFixtureRef.ref` |
-| `data` | FixtureItem[] | yes | Array of data records |
-
-A `FixtureItem` is an object whose keys and values are both strings (e.g. `title`, `url`, `snippet`).
-
----
-
-### `ComponentFixtureRef`
-
-Attaches a fixture dataset to a component, conditionally selected by a URL query param value.
-
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `ref` | string | yes | Name of the fixture to use (must match a top-level `Fixture.name`) |
-| `when.param` | string | yes | The URL query param name to inspect |
-| `when.equals` | string | yes | The value the param must equal for this fixture to be active |
-
-A component may have multiple fixture refs. They are evaluated in order; the first matching `when` condition wins.
-
-**Rules:**
-- `ref` must match a fixture defined in the top-level `fixtures` array.
-- If no `when` condition matches, the component falls back to its default placeholder rendering.
-- Fixture logic is intentionally limited to simple equality checks (`param == value`). More complex conditions are a signal to move logic into the application layer.
-
----
-
 ### `Annotation`
 
 A human-readable note attached to any schema element. Annotations are never semantic — they do not affect compilation logic — but they are always surfaced in compiler output as code comments.
@@ -223,9 +191,39 @@ Access control metadata. In the React target, ACL is rendered as a JSX comment. 
 7. Navigation to a destination appends params as a URL query string, values URL-encoded.
 8. The full project scaffold is generated alongside view files: `package.json`, `index.html`, `vite.config.ts`, `tsconfig.json`, `src/main.tsx`.
 9. The generated project uses pnpm. After generation, run `pnpm install && pnpm dev` to start.
-10. When a view contains components with fixture refs, `useSearchParams` is imported and a module-level `_fixtures` constant is generated containing only the datasets referenced by that view.
-11. For each component with fixture refs, a `<componentName>_data` variable is generated using an IIFE that evaluates `when` conditions in order and returns the matching fixture array, or `[]` if none match.
-12. `useNavigate` and `useSearchParams` are merged into a single `import { ... } from 'react-router-dom'` statement.
+
+---
+
+## Compiler rules (Expo target)
+
+1. Each view compiles to `app/<sanitized-name>.tsx` (relative to the output directory).
+2. A full standalone project scaffold is generated alongside screen files:
+   - `package.json` — Expo 55 dependencies, `expo-router/entry` as main
+   - `tsconfig.json` — extends `expo/tsconfig.base` with strict mode
+   - `app.json` — Expo config with name, slug, platforms, scheme
+   - `app/_layout.tsx` — root `Stack` navigator
+   - `app/index.tsx` — `Redirect` to the first view's route
+3. All screen components use `export default function` (Expo Router convention).
+4. `View` and `StyleSheet` are always imported from `react-native`.
+5. Additional RN primitives are imported only when the view uses them:
+   - `input` → `TextInput`
+   - `button` → `Pressable`, `Text`
+   - `list` → `FlatList`, `Text`
+   - `richtext` → `Text`
+   - `form`, `menu`, unknown → `View` (already imported)
+6. `useRouter` from `expo-router` is imported only when the view has at least one outgoing triggered path.
+7. `useState` is imported only when at least one component is referenced in an outgoing `params.from` (controlled input).
+8. Controlled inputs (`params.from`) receive `value` and `onChangeText` wired to component state.
+9. Trigger → React Native handler mapping:
+   - `submit` → `onSubmitEditing` on `TextInput`
+   - `click` → `onPress` on `Pressable`
+   - `change` → merged into `onChangeText` on `TextInput` (state update + navigation in one handler)
+10. Navigation uses `router.push(path)` for paths without params, or `router.push({ pathname, params })` when params are present.
+11. Every rendered element has a `testID` prop set to the component name.
+12. A `StyleSheet.create({})` block is always emitted at the bottom of the file. Only style keys actually needed by the view's components are included.
+13. The StyleSheet includes a `// TODO: replace hardcoded values with colours/spacing/typography from src/theme.ts` comment.
+14. Annotations render as `{/* note */}` JSX comments immediately before the component.
+15. ACL renders as `{/* ACL: roles=[...] */}` JSX comments immediately before the component. View-level ACL renders as a `// ACL:` line comment before the function declaration.
 
 ---
 
@@ -242,6 +240,7 @@ src/
       mermaid.ts      # Mermaid diagram compiler
     __tests__/
       parser.test.ts
+      mermaid.test.ts
       react.test.ts
   schema/
     schema.yaml       # JSON Schema definition of the DSL
@@ -258,14 +257,8 @@ examples/
 bun run src/compiler/index.ts <input.yaml> <target> [output]
 ```
 
-| Target | Output |
-|---|---|
-| `mermaid` | Single `.md` file (or stdout) containing a Mermaid flowchart |
-| `react` | Full React + Vite + TypeScript project written to the output directory |
-
-Example:
-
-```
-bun run src/compiler/index.ts examples/search-engine.yaml react search-engine-app
-cd search-engine-app && pnpm install && pnpm dev
-```
+| Target | Default output | Description |
+|---|---|---|
+| `mermaid` | stdout | Mermaid flowchart; pass a path to write to a file instead |
+| `react` | `build/` | Full React + Vite + TypeScript project |
+| `expo` | `build/` | Full Expo + React Native project with Expo Router |
